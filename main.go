@@ -22,26 +22,24 @@ func main() {
 
 	generation := nextGen(initalOrg, goalOrg)
 
-	bestOrg := calcBestChild(generation)
+	//bestOrg := calcBestOffs(generation, goalOrg)
 
-	fmt.Print(initalOrg)
+	fmt.Print(generation)
 
 }
 
 func nextGen(org, goalOrg organism) []organism {
-	var nextGenOrg organism
-	var nextGen []organism
+	var offspring []organism
 
 	for i := 1; i <= 5; i++ {
 		if rand.Intn(10) == 1 {
-			nextGenOrg := mutate(org, goalOrg)
+			offspring = append(offspring, mutate(org, goalOrg))
 		} else {
-			nextGenOrg := org
+			offspring = append(offspring, org)
 		}
-		nextGen := append(nextGen, nextGenOrg)
 	}
 
-	return nextGen
+	return offspring
 }
 
 func mutate(org, goal organism) organism {
@@ -59,7 +57,7 @@ func mutate(org, goal organism) organism {
 	return organism{name: mutatedOrg, fit: calcFit(mutatedOrg, goal.name)}
 }
 
-func calcBestChild(generation []organism) organism {
+func calcBestOffs(generation []organism, goalOrg organism) organism {
 	var bestOrg organism
 
 	return bestOrg
@@ -68,13 +66,9 @@ func calcBestChild(generation []organism) organism {
 func calcFit(current, goal string) int {
 	var fit int
 
-	if goal == goal {
-
-	} else {
-		for k, v := range goal {
-			if goal[k] == current[k] {
-				fit++
-			}
+	for i := range goal {
+		if goal[i] == current[i] {
+			fit++
 		}
 	}
 	return fit
