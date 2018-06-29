@@ -16,7 +16,7 @@ func main() {
 	inital := os.Args[1]
 	goal := os.Args[2]
 
-	// Initilize the first and last organism
+	// Initilize the first and goal organism
 	initalOrg := organism{name: inital, fit: calcFit(inital, goal)}
 	goalOrg := organism{name: goal, fit: calcFit(goal, goal)}
 
@@ -24,7 +24,7 @@ func main() {
 
 	//bestOrg := calcBestOffs(generation, goalOrg)
 
-	fmt.Print(generation)
+	fmt.Println(generation)
 
 }
 
