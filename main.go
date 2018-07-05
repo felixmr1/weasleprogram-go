@@ -4,6 +4,7 @@ import (
 	"fmt" // A package in the Go standard library.
 	"math/rand"
 	"os"
+	"unicode/utf8"
 )
 
 type organism struct {
@@ -20,15 +21,13 @@ func main() {
 	initalOrg := organism{name: inital, fit: calcFit(inital, goal)}
 	goalOrg := organism{name: goal, fit: calcFit(goal, goal)}
 
-	generation := nextGen(initalOrg, goalOrg)
+	lastOrg := generateGenerations(initalOrg, goalOrg)
 
-	//bestOrg := calcBestOffs(generation, goalOrg)
-
-	fmt.Println(generation)
+	fmt.Println(lastOrg.name + "<-- Winner")
 
 }
 
-func nextGen(org, goalOrg organism) []organism {
+func generateGenerations(org, goalOrg organism) organism {
 	var offspring []organism
 
 	for i := 1; i <= 5; i++ {
@@ -39,7 +38,13 @@ func nextGen(org, goalOrg organism) []organism {
 		}
 	}
 
-	return offspring
+	bestOffspring := calcBestOffs(offspring, goalOrg)
+
+	if bestOffspring.name != goalOrg.name {
+		fmt.Println(bestOffspring.name)
+		generateGenerations(bestOffspring, goalOrg)
+	}
+	return bestOffspring
 }
 
 func mutate(org, goal organism) organism {
@@ -50,7 +55,7 @@ func mutate(org, goal organism) organism {
 	newGene := ecoSystem[rand.Intn(len(ecoSystem)-1)]
 
 	// get a random gene (char) *position* to replace
-	pos := rand.Intn(len(org.name) - 1)
+	pos := rand.Intn(utf8.RuneCountInString(org.name) - 1)
 
 	mutatedOrg := org.name[:pos] + string(newGene) + org.name[pos+1:]
 
