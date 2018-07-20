@@ -4,75 +4,113 @@ import (
 	"fmt" // A package in the Go standard library.
 	"math/rand"
 	"os"
-	"unicode/utf8"
+	"time"
 )
 
 type organism struct {
-	name string
+	name []rune
 	fit  int
 }
 
 func main() {
 	// Set up
-	inital := os.Args[1]
-	goal := os.Args[2]
+	initial := []rune(os.Args[1])
+	goal := []rune(os.Args[2])
+	generations := 0
+
+	// Seed the random generator
+	rand.Seed(time.Now().UTC().UnixNano())
 
 	// Initilize the first and goal organism
-	initalOrg := organism{name: inital, fit: calcFit(inital, goal)}
+	initialOrg := organism{name: initial, fit: calcFit(initial, goal)}
 	goalOrg := organism{name: goal, fit: calcFit(goal, goal)}
 
-	lastOrg := generateGenerations(initalOrg, goalOrg)
+	winner := generateGenerations(initialOrg, goalOrg, generations)
 
-	fmt.Println(lastOrg.name + "<-- Winner")
+	fmt.Printf("%s -- Goal! \n", string(winner.name))
 
 }
 
-func generateGenerations(org, goalOrg organism) organism {
+func generateGenerations(org, goalOrg organism, generations int) organism {
 	var offspring []organism
+	generations++
 
-	for i := 1; i <= 5; i++ {
-		if rand.Intn(10) == 1 {
+	// Loop through the amount of offspring you want the next generation to have
+	// Select an arbitrary chance for any given offspring to mutate
+	amountOffspring := 5
+	for i := 0; i < amountOffspring; i++ {
+		if rand.Intn(5) == 1 { // 20% chance
 			offspring = append(offspring, mutate(org, goalOrg))
 		} else {
 			offspring = append(offspring, org)
 		}
 	}
 
+	// Get the best fitted offspring
 	bestOffspring := calcBestOffs(offspring, goalOrg)
 
-	if bestOffspring.name != goalOrg.name {
-		fmt.Println(bestOffspring.name)
-		generateGenerations(bestOffspring, goalOrg)
+	fmt.Printf("%d: %s \n", generations, string(bestOffspring.name))
+
+	// Check if the best offspring is equal to the goal organism
+	if string(bestOffspring.name) != string(goalOrg.name) {
+		// If not equal, call this function again. With best fitted offspring
+		generateGenerations(bestOffspring, goalOrg, generations)
 	}
+
 	return bestOffspring
 }
 
-func mutate(org, goal organism) organism {
-	// create the eco system (all possible chars)
-	ecoSystem := append([]rune(org.name), []rune(goal.name)...)
+func mutate(org, goalOrg organism) organism {
 
-	// get a random gene (char) from the eco system
-	newGene := ecoSystem[rand.Intn(len(ecoSystem)-1)]
+	// If we have the goalOrg then return it
+	if string(org.name) == string(goalOrg.name) {
+		return org
+	}
 
-	// get a random gene (char) *position* to replace
-	pos := rand.Intn(utf8.RuneCountInString(org.name) - 1)
+	// create the eco system (all possible runes)
+	ecoSystem := []rune("abcdefghijklmnopqrstuvwxyz ")
 
-	mutatedOrg := org.name[:pos] + string(newGene) + org.name[pos+1:]
+	// get a random gene (rune) from the eco system
+	newGene := ecoSystem[rand.Intn(len(ecoSystem))]
 
-	return organism{name: mutatedOrg, fit: calcFit(mutatedOrg, goal.name)}
+	// Get the indexes of all missplaced genomes
+	var badGenIndex []int
+	for i := range org.name {
+		if org.name[i] != goalOrg.name[i] {
+			badGenIndex = append(badGenIndex, i)
+		}
+	}
+
+	// randomly select an index to replace
+	pos := badGenIndex[rand.Intn(len(badGenIndex))]
+
+	// doing this since i cant append 3 items
+	temp := append(org.name[:pos], newGene)
+	mutatedOrg := append(temp, org.name[pos+1:]...)
+
+	return organism{name: mutatedOrg, fit: calcFit(mutatedOrg, goalOrg.name)}
 }
 
 func calcBestOffs(generation []organism, goalOrg organism) organism {
+
 	var bestOrg organism
+
+	for i := range generation[:len(generation)-1] {
+		if generation[i].fit >= generation[i+1].fit {
+			bestOrg = generation[i]
+		} else {
+			bestOrg = generation[i+1]
+		}
+	}
 
 	return bestOrg
 }
 
-func calcFit(current, goal string) int {
+func calcFit(org, goalOrg []rune) int {
 	var fit int
 
-	for i := range goal {
-		if goal[i] == current[i] {
+	for i := range goalOrg {
+		if goalOrg[i] == org[i] {
 			fit++
 		}
 	}
