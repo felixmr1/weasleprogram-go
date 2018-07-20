@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt" // A package in the Go standard library.
+	"fmt"
 	"math/rand"
 	"os"
 	"time"
@@ -14,16 +14,16 @@ type organism struct {
 
 func main() {
 	// Set up
-	initial := []rune(os.Args[1])
-	goal := []rune(os.Args[2])
+	goal := []rune(os.Args[1])
+	initial := []rune(os.Args[2])
 	generations := 0
 
 	// Seed the random generator
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	// Initilize the first and goal organism
-	initialOrg := organism{name: initial, fit: calcFit(initial, goal)}
 	goalOrg := organism{name: goal, fit: calcFit(goal, goal)}
+	initialOrg := organism{name: initial, fit: calcFit(initial, goal)}
 
 	winner := generateGenerations(initialOrg, goalOrg, generations)
 
@@ -62,7 +62,7 @@ func generateGenerations(org, goalOrg organism, generations int) organism {
 
 func mutate(org, goalOrg organism) organism {
 
-	// If we have the goalOrg then return it
+	// If we have the goalOrg then return then dont mutate it
 	if string(org.name) == string(goalOrg.name) {
 		return org
 	}
